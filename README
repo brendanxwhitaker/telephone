@@ -1,0 +1,23 @@
+Telephone.
+
+An implementation of three functions:
+
+numbers_to_words(s: str) -> str:
+
+    Takes as an argument a string representing a US phone number and which outputs a
+    string which has transformed part or all of the phone number into a single 
+    "wordified" phone number that can be typed on a US telephone (for example, a
+    valid output of number_to_words("1-800-724-6837") could be "1-800-PAINTER").
+
+    NOTE: Should this be idempotent? Should it take in a vocabulary as well? If it isn't
+    idempotent, should it be consistent given the same random seed (if it's selecting
+    sections of the number and words to replace them at random).
+
+words_to_number(s: str) -> str:
+
+    Translates a wordified phone number back into a standard US numerical phone number.
+
+all_wordifications(s: str, vocabulary: Set[str]) -> Set[str]:
+
+    Computes all wordifications of the valid US phone number ``s`` given the plaintext
+    uncased alpha vocab given by ``vocabulary``.
