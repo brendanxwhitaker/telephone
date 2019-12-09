@@ -1,7 +1,8 @@
 """ A function to generate all possible phonewords from a given number. """
+import re
 import json
 import itertools
-from typing import Set, Dict, List
+from typing import Set, Dict, List, Tuple
 
 # pylint: disable=bad-continuation
 
@@ -70,9 +71,7 @@ def compute_substrings(number: str) -> Dict[int, List[str]]:
     return substrs_map
 
 
-def all_wordifications(
-    number: str, vocab_map: Dict[str, List[str]], letter_map: Dict[str, str]
-) -> Set[str]:
+def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]:
     """
     Generates all phonewords from ``number`` using words from ``vocabulary``.
 
@@ -80,8 +79,16 @@ def all_wordifications(
     ----------
     number : ``str``.
         A valid US phone number with country code and dashes.
-    vocabulary : ``Set[str]``.
-        A set of strings consisting of lowercase alpha characters only. All nonempty.
+    vocab_map : ``Dict[str, List[str]]``.
+        A mapping from sequences of numerals to words in a vocabulary which map to them
+        under some ``letter_map`` which maps letters to numbers not necessarily
+        injectively.
+
+    Returns
+    -------
+    dashed_phonewords : ``Set[str]``.
+        The set of all possible phonewords which can be generated from ``number`` with
+        the given ``vocab_map``. All letters are uppercase.
     """
 
     number = validate(number)
@@ -103,6 +110,7 @@ def all_wordifications(
         substrs_starting_at_i = substrs_map[i]
         new_list: List[str] = []
         previous_list: List[str] = phoneword_map[i + 1]
+        # TODO: Do we need this? What is it for?
         substitutions_at_i: List[str] = []
 
         # Wordifications of a substring are still valid wordifications.
@@ -131,12 +139,44 @@ def all_wordifications(
 
         phoneword_map[i] = new_list
         i -= 1
-    complete_phonewords = set([token for token, _ in phoneword_map[0]])
+    complete_phonewords = set([token.upper() for token, _ in phoneword_map[0]])
+    dashed_phonewords = {insert_dashes(word) for word in complete_phonewords}
 
-    return complete_phonewords
+    return dashed_phonewords
 
 
-def compute_hash_token_map(
+def insert_dashes(phoneword_no_dashes: str) -> str:
+    """ Inserts dashes between appropriate segments of a US phoneword. """
+    # TODO: Make format an argument.
+    # TODO: Check that lengths match.
+
+    if phoneword_no_dashes.upper() != phoneword_no_dashes:
+        raise ValueError("Word '%s' contains lowercase letters." % phoneword_no_dashes)
+
+    phoneword = phoneword_no_dashes
+    US_FORMAT = "0-000-000-0000"
+    for i, char in enumerate(US_FORMAT):
+
+        if i == 0:
+            continue
+
+        if char == "-":
+            phoneword = phoneword[:i] + char + phoneword[i:]
+
+    # Treat the country code, hardcoded for US ``1`` for now.
+    base = phoneword[2:]
+    base = re.sub(r"([0-9]+)([A-Z]+)", r"\1-\2", base)
+    base = re.sub(r"([A-Z]+)([0-9]+)", r"\1-\2", base)
+    base = re.sub(r"([A-Z])-([A-Z])", r"\1\2", base)
+    base = re.sub(r"-([0-9]{1,2})-([0-9]{1,2})-", r"-\1\2-", base)
+    base = re.sub(r"^([0-9]{1,2})-([0-9]{1,2})-", r"\1\2-", base)
+    base = re.sub(r"-([0-9]{1,2})-([0-9]{1,2})$", r"-\1\2", base)
+    phoneword = phoneword[:2] + base
+
+    return phoneword
+
+
+def compute_vocab_map(
     vocabulary: Set[str], letter_map: Dict[str, str]
 ) -> Dict[str, List[str]]:
     """
@@ -144,16 +184,16 @@ def compute_hash_token_map(
     classes of words under the hashing function given by ``letter_map``.
     """
     # Construct vocab_map.
-    hash_token_map: Dict[str, List[str]] = {}
-    for token in tokens:
-        tokenhash = "".join([letter_map[char] for char in token])
-        print(tokenhash)
-        if tokenhash in hash_token_map:
-            hash_token_map[tokenhash].append(token)
+    vocab_map: Dict[str, List[str]] = {}
+    for token in vocabulary:
+        uppercased_token = token.upper()
+        tokenhash = "".join([letter_map[char] for char in uppercased_token])
+        if tokenhash in vocab_map:
+            vocab_map[tokenhash].append(uppercased_token)
         else:
-            hash_token_map[tokenhash] = [token]
+            vocab_map[tokenhash] = [uppercased_token]
 
-    return hash_token_map
+    return vocab_map
 
 
 def main():
@@ -170,9 +210,9 @@ def main():
     with open("settings/mapping.json", "r") as mapping:
         letter_map = json.load(mapping)
 
-    hash_token_map = compute_hash_token_map(tokens, letter_map)
+    vocab_map = compute_vocab_map(tokens, letter_map)
 
-    all_wordifications("12255", hash_token_map, letter_map)
+    all_wordifications("12255", vocab_map)
 
 
 if __name__ == "__main__":
