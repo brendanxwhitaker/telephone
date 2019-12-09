@@ -15,6 +15,8 @@ US_NUMBER_NODASH = re.compile(r"^1[0-9]{10}$")
 US_ALPHANUMERIC = re.compile(r"^1[A-Z0-9]{10}$")
 UPPERCASE_ALPHA = re.compile(r"[A-Z]+")
 LOWERCASE_ALPHA = re.compile(r"[a-z]+")
+US_FORMAT = "0-000-000-0000"
+TEST_FORMAT = US_FORMAT
 
 
 @given(
@@ -83,5 +85,5 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
     phoneword = number_to_words(number, vocab)
-    resultant_number = words_to_number(phoneword)
+    resultant_number = words_to_number(phoneword, TEST_FORMAT)
     assert number == resultant_number
