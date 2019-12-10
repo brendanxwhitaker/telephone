@@ -2,7 +2,7 @@ Telephone.
 
 An implementation of three functions:
 
-numbers_to_words(s: str, vocabulary: Set[str]) -> str:
+def number_to_words(number: str, vocabulary: Set[str]) -> str:
 
     Takes as an argument a string representing a US phone number and which outputs a
     string which has transformed part or all of the phone number into a single 
@@ -16,23 +16,21 @@ numbers_to_words(s: str, vocabulary: Set[str]) -> str:
     at random). Note that it should not be idempotent because the output is no longer
     a valid purely-numerical US phone number.
 
-words_to_number(s: str) -> str:
+def words_to_number(phoneword: str, letter_map: Dict[str, str]) -> str:
 
     Translates a wordified phone number back into a standard US numerical phone number.
 
-    NOTES:
+    NOTE: There are many ways to make the replacement. If we want the fastest, it 
+    depends on the use case. If we are running many numbers through at a time, it 
+    probably makes the most sense to write a complex regex and compile it at the 
+    beginning. But if we're computing many one-off translations, it's quicker (see [1])
+    to just use a built in string replace and a dictionary. This has the added benefit
+    of being considerably more transparent.
 
-    There are many ways to make the replacement. If we want the fastest, it depends on
-    the use case. If we are running many numbers through at a time, it probably makes
-    the most sense to write a complex regex and compile it at the beginning. But if
-    we're computing many one-off translations, it's quicker (see [1]) to just use a
-    built in string replace and a dictionary. This has the added benefit of being
-    considerably more transparent.
+def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]:
 
-all_wordifications(s: str, vocabulary: Set[str]) -> Set[str]:
-
-    Computes all wordifications of the valid US phone number ``s`` given the plaintext
-    uncased alpha vocab given by ``vocabulary``.
+    Computes all wordifications of the valid US phone number ``number`` given a
+    plaintext uncased alpha vocab hashed using some letter map.
 
 
 [1] https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string
