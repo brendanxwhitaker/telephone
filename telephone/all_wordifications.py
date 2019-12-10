@@ -91,6 +91,7 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
         the given ``vocab_map``. All letters are uppercase.
     """
 
+    spacer = "&"
     number = validate(number)
     substrs_map = compute_substrings(number)
 
@@ -110,8 +111,6 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
         substrs_starting_at_i = substrs_map[i]
         new_list: List[Tuple[str, int]] = []
         previous_list: List[Tuple[str, int]] = phoneword_map[i + 1]
-        # TODO: Do we need this? What is it for?
-        substitutions_at_i: List[str] = []
 
         # Wordifications of a substring are still valid wordifications.
         # Add the phonewords you get by just adding ``number[i]`` to phonewords of
@@ -128,52 +127,84 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
             # For each substring of ``gap`` which includes first char of ``gap``.
             for gap_substr in gap_substrs:
 
+                # TODO: Can we make this its own function?
                 # If the substring has 1 or more wordifications, grab them as a list.
                 if gap_substr in vocab_map:
                     substr_wordifications: List[str] = vocab_map[gap_substr]
 
                     # For each word in the list, make the substitution and add to list.
                     for word in substr_wordifications:
-                        phoneword = word + old_phoneword[len(word) - 1 :]
+
+                        # Placing two words adjacent to each other; delimit them.
+                        # Make sure we don't put a spacer at the very end.
+                        if len(word) == len(gap) and end_index < len(number):
+                            phoneword = word + spacer + old_phoneword[len(word) - 1 :]
+                        else:
+                            # print("No spacer for word '%s'." % word)
+                            # print("End index:", end_index)
+                            # print("Len number:", len(number))
+                            phoneword = word + old_phoneword[len(word) - 1 :]
                         new_list.append((phoneword, i))
 
         phoneword_map[i] = new_list
         i -= 1
-    complete_phonewords = set([token.upper() for token, _ in phoneword_map[0]])
+
+    # Note that at this point, the phonewords may have spacer tokens in them.
+    complete_phonewords = {token.upper() for token, _ in phoneword_map[0]}
     dashed_phonewords = {insert_dashes(word) for word in complete_phonewords}
 
     return dashed_phonewords
 
 
-def insert_dashes(phoneword_no_dashes: str) -> str:
+def insert_dashes(spaced_phoneword: str) -> str:
     """ Inserts dashes between appropriate segments of a US phoneword. """
     # TODO: Make format an argument.
-    # TODO: Check that lengths match.
     # TODO: Split into a validation function for dashless phonewords.
-    if phoneword_no_dashes.upper() != phoneword_no_dashes:
-        raise ValueError("Word '%s' contains lowercase letters." % phoneword_no_dashes)
-    if "-" in phoneword_no_dashes:
-        raise ValueError("Word '%s' should not contain dashes.")
-
-    phoneword = phoneword_no_dashes
+    # 1. Insert `^` characters where dashes go according to the format.
+    # 2. Insert a dash before every inserted word.
+    # 3. Replace re.sub(r"([A-Z])^([A-Z])", "\1\2", <string>).
+    spacer = "&"
+    delim = "*"
     US_FORMAT = "0-000-000-0000"
-    for i, char in enumerate(US_FORMAT):
 
-        if i == 0:
-            continue
+    # Validate input.
+    phoneword = spaced_phoneword
+    if re.search("[^A-Z0-9%s]" % spacer, phoneword):
+        raise ValueError("Word '%s' should only contain '[A-Z0-9&]'." % phoneword)
+    assert len(US_FORMAT.replace("-", "")) == len(phoneword.replace(spacer, ""))
 
+    # Add delimiters (``*``).
+    # Format map: "0-000" -> "0-0*0*0".
+    # Phoneword map: "123ABC&DEF" -> "1*2*3*A*B*C&D*E*F".
+    delim_format = re.sub("([0-9])(?!(%s|$))" % "-", r"\1" + delim, US_FORMAT)
+    delim_phoneword = re.sub("([A-Z0-9])(?!(%s|$))" % spacer, r"\1" + delim, phoneword)
+    assert len(delim_format) == len(delim_phoneword)
+
+    # Wherever there is a dash in ``delim_format``, replace the delimiter in the
+    # ``delim_phoneword`` with a dash, unless it's a spacer.
+    for i, char in enumerate(delim_format):
         if char == "-":
-            phoneword = phoneword[:i] + char + phoneword[i:]
+            # Don't replace spacers because these need to stay put between alpha chars.
+            if delim_phoneword[i] == delim:
+                delim_phoneword = delim_phoneword[:i] + char + delim_phoneword[i + 1 :]
 
+    # Remove remaining delimiters.
+    phoneword = delim_phoneword.replace(delim, "")
+
+    # TODO: Don't do substitution on the country code.
     # Treat the country code, hardcoded for US ``1`` for now.
     base = phoneword[2:]
+
+    # Add dashes at borders between digits and letters.
     base = re.sub(r"([0-9]+)([A-Z]+)", r"\1-\2", base)
     base = re.sub(r"([A-Z]+)([0-9]+)", r"\1-\2", base)
+
+    # Kill dashes within words (but not spacers, which separate adjacent words).
     base = re.sub(r"([A-Z])-([A-Z])", r"\1\2", base)
-    base = re.sub(r"-([0-9]{1,2})-([0-9]{1,2})-", r"-\1\2-", base)
-    base = re.sub(r"^([0-9]{1,2})-([0-9]{1,2})-", r"\1\2-", base)
-    base = re.sub(r"-([0-9]{1,2})-([0-9]{1,2})$", r"-\1\2", base)
     phoneword = phoneword[:2] + base
+
+    # Replace spacers with dashes.
+    phoneword = phoneword.replace(spacer, "-")
 
     return phoneword
 
