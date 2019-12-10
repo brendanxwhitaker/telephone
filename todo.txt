@@ -1,4 +1,7 @@
 1. Fix pylint errors. (DONE)
 2. Fix mypy errors. (DONE)
 3. Finish writing tests for dash insertion.
-4. Fix given generation code for skipped tests.
+    a. Make sure it treats spacers correctly.
+4. Fix given generation code for skipped tests. (DONE)
+5. Implement ``number_to_words()``.
+6. Write some old-fashioned tests.
