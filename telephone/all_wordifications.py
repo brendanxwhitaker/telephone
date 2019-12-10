@@ -108,8 +108,8 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
     i = len(number) - 1
     while i >= 0:
         substrs_starting_at_i = substrs_map[i]
-        new_list: List[str] = []
-        previous_list: List[str] = phoneword_map[i + 1]
+        new_list: List[Tuple[str, int]] = []
+        previous_list: List[Tuple[str, int]] = phoneword_map[i + 1]
         # TODO: Do we need this? What is it for?
         substitutions_at_i: List[str] = []
 

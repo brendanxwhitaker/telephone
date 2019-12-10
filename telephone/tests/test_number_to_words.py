@@ -1,7 +1,8 @@
 """ Tests for the ``number_to_words()`` function. """
+import json
 from typing import List, Set
 
-import pytest
+import pytest # type: ignore
 import hypothesis.strategies as st
 from hypothesis import given
 
@@ -86,6 +87,9 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
+    # Read in the letter mapping.
+    with open("telephone/settings/mapping.json", "r") as mapping:
+        letter_map = json.load(mapping)
     phoneword = number_to_words(number, vocab)
-    resultant_number = words_to_number(phoneword, TEST_FORMAT)
+    resultant_number = words_to_number(phoneword, letter_map)
     assert number == resultant_number
