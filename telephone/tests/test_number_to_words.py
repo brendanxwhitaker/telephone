@@ -2,7 +2,6 @@
 import json
 from typing import List, Set
 
-import pytest # type: ignore
 import hypothesis.strategies as st
 from hypothesis import given
 
@@ -13,13 +12,11 @@ from telephone.tests.test_constants import (
     US_ALPHANUMERIC,
     UPPERCASE_ALPHA,
     LOWERCASE_ALPHA,
-    TEST_FORMAT,
 )
 
 # pylint: disable=bad-continuation
 
 
-@pytest.mark.skip
 @given(
     st.from_regex(US_NUMBER, fullmatch=True),
     st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)),
@@ -40,7 +37,6 @@ def test_number_to_words_generates_alphanumerics(number: str, vocab: Set[str]) -
     assert US_ALPHANUMERIC.match(phoneword_no_dashes)
 
 
-@pytest.mark.skip
 @given(
     st.from_regex(US_NUMBER, fullmatch=True),
     st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)),
@@ -67,7 +63,6 @@ def test_number_to_words_stays_in_vocabulary(number: str, vocab: Set[str]) -> No
     assert not found_invalid
 
 
-@pytest.mark.skip
 @given(
     st.from_regex(US_NUMBER, fullmatch=True),
     st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)),
