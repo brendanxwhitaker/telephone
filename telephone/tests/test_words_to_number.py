@@ -8,6 +8,7 @@ from hypothesis import given, assume
 
 from telephone.words_to_number import words_to_number
 from telephone.all_wordifications import all_wordifications
+from telephone.tests.test_utils import find_occurrences
 from telephone.tests.test_constants import (
     PHONEWORD,
     US_NUMBER,
@@ -63,10 +64,6 @@ def test_words_to_number_places_dashes_correctly(phoneword: str) -> None:
         letter_map = json.load(mapping)
     assume(len(phoneword.replace("-", "")) == len(TEST_FORMAT))
     number = words_to_number(phoneword, letter_map)
-
-    def find_occurrences(string, char):
-        return [i for i, letter in enumerate(string) if letter == char]
-
     assert find_occurrences(number, "-") == find_occurrences(TEST_FORMAT, "-")
 
 

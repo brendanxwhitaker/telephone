@@ -1,1 +1,4 @@
-1. Fix pylint errors.
+1. Fix pylint errors. (DONE)
+2. Fix mypy errors.
+3. Finish writing tests for dash insertion.
+4. Fix given generation code for skipped tests.
