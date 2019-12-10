@@ -149,9 +149,11 @@ def insert_dashes(phoneword_no_dashes: str) -> str:
     """ Inserts dashes between appropriate segments of a US phoneword. """
     # TODO: Make format an argument.
     # TODO: Check that lengths match.
-
+    # TODO: Split into a validation function for dashless phonewords.
     if phoneword_no_dashes.upper() != phoneword_no_dashes:
         raise ValueError("Word '%s' contains lowercase letters." % phoneword_no_dashes)
+    if "-" in phoneword_no_dashes:
+        raise ValueError("Word '%s' should not contain dashes.")
 
     phoneword = phoneword_no_dashes
     US_FORMAT = "0-000-000-0000"
