@@ -1,11 +1,9 @@
 """ A function to generate phonewords. """
 from typing import Set, List, Dict
 
-from telephone.all_wordifications import (
-    get_country_code_and_base,
-    get_substring_length_map,
-    insert_dashes,
-)
+from telephone.all_wordifications import insert_dashes
+from telephone.utils import get_country_code_and_base, get_substring_length_map
+
 # pylint: disable=bad-continuation
 
 

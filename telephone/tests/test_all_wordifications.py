@@ -7,7 +7,8 @@ from typing import Set
 import hypothesis.strategies as st
 from hypothesis import given, settings
 
-from telephone.all_wordifications import all_wordifications, compute_vocab_map
+from telephone.all_wordifications import all_wordifications
+from telephone.utils import compute_vocab_map
 from telephone.words_to_number import words_to_number
 from telephone.tests.test_constants import US_NUMBER, LOWERCASE_ALPHA
 
