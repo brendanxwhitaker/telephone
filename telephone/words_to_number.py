@@ -1,6 +1,6 @@
 """ Translation of phonewords to US phone numbers. """
 from typing import List, Dict
-from telephone.all_wordifications import insert_dashes
+from telephone.utils import insert_dashes
 
 
 def words_to_number(phoneword: str, letter_map: Dict[str, str]) -> str:

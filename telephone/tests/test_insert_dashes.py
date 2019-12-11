@@ -4,8 +4,7 @@ import re
 import hypothesis.strategies as st
 from hypothesis import given
 
-from telephone.all_wordifications import insert_dashes
-from telephone.tests.test_utils import find_occurrences, generate_spaced_phoneword
+from telephone.utils import find_occurrences, generate_spaced_phoneword, insert_dashes
 from telephone.tests.test_constants import (
     US_ALPHANUMERIC,
     US_NUMBER_NODASH,

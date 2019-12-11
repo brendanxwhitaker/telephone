@@ -5,7 +5,7 @@ import hypothesis.strategies as st
 from hypothesis import given
 
 from telephone.words_to_number import words_to_number
-from telephone.tests.test_utils import find_occurrences, generate_phoneword
+from telephone.utils import find_occurrences, generate_phoneword
 from telephone.tests.test_constants import TEST_FORMAT
 
 
