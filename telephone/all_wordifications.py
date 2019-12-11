@@ -10,9 +10,9 @@ VALID_CHARACTERS = set(list(" -0123456789"))
 FUNCTION_CHARACTERS = set(list("-"))
 
 
-def validate(number: str) -> str:
+def get_country_code_and_base(number: str) -> Tuple[str, str]:
     """
-    Determines if a string is a valid number given a format.
+    Determines if a string COULD be a valid phone number according to a general format.
 
     Parameters
     ----------
@@ -32,11 +32,11 @@ def validate(number: str) -> str:
     """
 
     # Strip whitespace.
-    sanitized_number = "".join(number.split())
+    stripped_number = "".join(number.split())
 
     # Check for invalid characters.
     for char in FUNCTION_CHARACTERS:
-        sanitized_number = sanitized_number.replace(char, "")
+        sanitized_number = stripped_number.replace(char, "")
     if not sanitized_number.isnumeric():
         raise ValueError(
             "The number '%s' contains invalid characters. " % number
@@ -47,28 +47,47 @@ def validate(number: str) -> str:
     fn_combs = itertools.combinations_with_replacement(FUNCTION_CHARACTERS, 2)
     fn_strs = ["".join(comb) for comb in fn_combs]
     for fn_str in fn_strs:
-        if fn_str in number:
+        if fn_str in stripped_number:
             raise ValueError(
                 "Invalid arrangement '%s' of function characters from '%s' in '%s'."
-                % (fn_str, str(FUNCTION_CHARACTERS), number)
+                % (fn_str, str(FUNCTION_CHARACTERS), stripped_number)
             )
 
-    return sanitized_number
+    segments = stripped_number.split("-")
+    country_code = segments[0]
+    base_number = "".join(segments[1:])
+
+    return country_code, base_number
 
 
-def compute_substrings(number: str) -> Dict[int, List[str]]:
-    """ Compute all substrings of ``number``. """
+def get_substring_map(number: str) -> Dict[int, List[str]]:
+    """ Map starting indices to substrings of ``number``. """
     if number == "":
         return {}
     substrs_map: Dict[int, List[str]] = {}
-    num: str = validate(number)
-    for i in range(len(num)):
+    for i in range(len(number)):
         substrs_starting_at_i: List[str] = []
-        for j in range(i, len(num)):
-            substr = num[i : j + 1]
+        for j in range(i, len(number)):
+            substr = number[i : j + 1]
             substrs_starting_at_i.append(substr)
         substrs_map[i] = substrs_starting_at_i
     return substrs_map
+
+
+def get_substring_length_map(number: str) -> Dict[int, List[str]]:
+    """ Compute sorted list of substrings of ``number``. """
+    if number == "":
+        return {}
+    substring_length_map: Dict[int, List[str]] = {}
+    for i in range(len(number)):
+        for j in range(i, len(number)):
+            substr = number[i : j + 1]
+            substr_len = len(substr)
+            if substr_len in substring_length_map:
+                substring_length_map[substr_len].append(substr)
+            else:
+                substring_length_map[substr_len] = [substr]
+    return substring_length_map
 
 
 def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]:
@@ -92,10 +111,10 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
     """
 
     spacer = "&"
-    number = validate(number)
-    substrs_map = compute_substrings(number)
+    country_code, base_number = get_country_code_and_base(number)
+    substrs_map = get_substring_map(base_number)
 
-    # Gives the list of all phonewords for ``number[i:]``.
+    # Gives the list of all phonewords for ``base_number[i:]``.
     phoneword_map: Dict[int, List[Tuple[str, int]]] = {}
 
     # TODO: Optimizations. If ``previous_list`` is sorted, then ``gap`` will get larger
@@ -105,23 +124,24 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
 
     # Tuples are of the form (substr, index of first non-numeric character).
     # TODO: Lists should be sorted by order of indices.
-    phoneword_map[len(number)] = [("", len(number))]
-    i = len(number) - 1
+    phoneword_map[len(base_number)] = [("", len(base_number))]
+    i = len(base_number) - 1
     while i >= 0:
         substrs_starting_at_i = substrs_map[i]
         new_list: List[Tuple[str, int]] = []
         previous_list: List[Tuple[str, int]] = phoneword_map[i + 1]
 
         # Wordifications of a substring are still valid wordifications.
-        # Add the phonewords you get by just adding ``number[i]`` to phonewords of
-        # ``number[i + 1:]``.
-        # i.e. ``4bike`` from ``bike`` for ``number == 42453``.
-        new_list.extend([(number[i] + substr, k) for substr, k in previous_list])
+        # Add the phonewords you get by just adding ``base_number[i]`` to phonewords of
+        # ``base_number[i + 1:]``.
+        # i.e. ``4bike`` from ``bike`` for ``base_number == 42453``.
+        new_list.extend([(base_number[i] + substr, k) for substr, k in previous_list])
         for old_phoneword, end_index in previous_list:
 
-            # Compute the gap between the beginning of the current string ``number[i:]``
-            # and the first alphabetic substitution in ``old_phoneword``.
-            gap: str = number[i:end_index]
+            # Compute the gap between the beginning of the current string
+            # ``base_number[i:]`` and the first alphabetic substitution in
+            # ``old_phoneword``.
+            gap: str = base_number[i:end_index]
             gap_substrs = substrs_starting_at_i[: len(gap)]
 
             # For each substring of ``gap`` which includes first char of ``gap``.
@@ -137,12 +157,12 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
 
                         # Placing two words adjacent to each other; delimit them.
                         # Make sure we don't put a spacer at the very end.
-                        if len(word) == len(gap) and end_index < len(number):
+                        if len(word) == len(gap) and end_index < len(base_number):
                             phoneword = word + spacer + old_phoneword[len(word) - 1 :]
                         else:
                             # print("No spacer for word '%s'." % word)
                             # print("End index:", end_index)
-                            # print("Len number:", len(number))
+                            # print("Len base_number:", len(base_number))
                             phoneword = word + old_phoneword[len(word) - 1 :]
                         new_list.append((phoneword, i))
 
@@ -150,7 +170,8 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
         i -= 1
 
     # Note that at this point, the phonewords may have spacer tokens in them.
-    complete_phonewords = {token.upper() for token, _ in phoneword_map[0]}
+    complete_phonewords = {word.upper() for word, _ in phoneword_map[0]}
+    complete_phonewords = {country_code + spacer + word for word in complete_phonewords}
     dashed_phonewords = {insert_dashes(word) for word in complete_phonewords}
 
     return dashed_phonewords
