@@ -4,10 +4,14 @@
     a. Make sure it treats spacers correctly. (DONE)
 4. Fix given generation code for skipped tests. (DONE)
 5. Implement ``number_to_words()``. (DONE)
-6. Move some functions out of ``all_wordifications.py`` and decide what to name this file.
+6. Move some functions out of ``all_wordifications.py`` and decide what to name this file. (DONE)
 7. Write some old-fashioned tests.
-8. Decide how to rename test constants and utilities.
+8. Decide how to rename test constants. (DONE)
 9. Write out assumptions.
 10. Fix validation and country-base split functionality.
-11. Polish documentation.
-12. Update README.
+11. Make arguments optional and auto-download data to a ``data/`` folder.
+12. Add ``data/`` to ``.gitignore``.
+13. Complete all inline TODOs.
+14. Add a ``generators.py``?
+14. Polish documentation.
+15. Update README.
