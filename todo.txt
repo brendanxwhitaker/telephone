@@ -1,0 +1,13 @@
+1. Fix pylint errors. (DONE)
+2. Fix mypy errors. (DONE)
+3. Finish writing tests for dash insertion. (DONE)
+    a. Make sure it treats spacers correctly. (DONE)
+4. Fix given generation code for skipped tests. (DONE)
+5. Implement ``number_to_words()``. (DONE)
+6. Write some old-fashioned tests.
+7. Decide how to rename test constants and utilities.
+8. Move some functions out of ``all_wordifications.py`` and decide what to name this file.
+9. Write out assumptions.
+10. Fix validation and country-base split functionality.
+11. Polish documentation.
+12. Update README.
