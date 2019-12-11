@@ -5,7 +5,7 @@ import hypothesis.strategies as st
 from hypothesis import given
 
 from telephone.all_wordifications import insert_dashes
-from telephone.tests.test_utils import find_occurrences
+from telephone.tests.test_utils import find_occurrences, generate_spaced_phoneword
 from telephone.tests.test_constants import (
     US_ALPHANUMERIC,
     US_NUMBER_NODASH,
@@ -35,7 +35,21 @@ def test_insert_dashes_keeps_dashes_inside(phoneword_no_dashes: str) -> None:
 
 
 @given(st.from_regex(US_NUMBER_NODASH, fullmatch=True))
-def test_insert_dashes_places_dashes_in_correct_place(phoneword_no_dashes: str) -> None:
+def test_insert_dashes_places_dashes_correctly(phoneword_no_dashes: str) -> None:
     """ Make sure a classical phone number is treated correctly. """
     dashed = insert_dashes(phoneword_no_dashes)
     assert find_occurrences(dashed, "-") == find_occurrences(TEST_FORMAT, "-")
+
+
+@given(st.data())
+def test_insert_dashes_handles_spacers(data) -> None:
+    """ Make sure spacers are replaced with dashes. """
+    spacer = "&"
+    spaced_phoneword = generate_spaced_phoneword(data)
+    segments = spaced_phoneword.split(spacer)
+    letter_segments = [re.sub(r"[0-9]", "", segment) for segment in segments]
+    phoneword = insert_dashes(spaced_phoneword)
+    dashed_segments = phoneword.split("-")
+    for segment in letter_segments:
+        if segment and segment not in dashed_segments:
+            raise ValueError("Word '%s' not found in '%s'." % (segment, phoneword))

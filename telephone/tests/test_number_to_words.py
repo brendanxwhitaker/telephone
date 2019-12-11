@@ -32,7 +32,11 @@ def test_number_to_words_generates_alphanumerics(number: str, vocab: Set[str]) -
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    phoneword = number_to_words(number, vocab)
+    # Read in the letter mapping.
+    with open("telephone/settings/mapping.json", "r") as mapping:
+        letter_map = json.load(mapping)
+
+    phoneword = number_to_words(number, vocab, letter_map)
     phoneword_no_dashes = phoneword.replace("-", "")
     assert US_ALPHANUMERIC.match(phoneword_no_dashes)
 
@@ -52,15 +56,17 @@ def test_number_to_words_stays_in_vocabulary(number: str, vocab: Set[str]) -> No
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    phoneword = number_to_words(number, vocab)
+    # Read in the letter mapping.
+    with open("telephone/settings/mapping.json", "r") as mapping:
+        letter_map = json.load(mapping)
+
+    phoneword = number_to_words(number, vocab, letter_map)
     matches: List[str] = UPPERCASE_ALPHA.findall(phoneword)
 
     found_invalid = False
     for match in matches:
         if match.lower() not in vocab:
-            found_invalid = True
-
-    assert not found_invalid
+            raise ValueError("Token '%s' not found in vocab." % match)
 
 
 @given(
@@ -85,6 +91,6 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
     # Read in the letter mapping.
     with open("telephone/settings/mapping.json", "r") as mapping:
         letter_map = json.load(mapping)
-    phoneword = number_to_words(number, vocab)
+    phoneword = number_to_words(number, vocab, letter_map)
     resultant_number = words_to_number(phoneword, letter_map)
     assert number == resultant_number
