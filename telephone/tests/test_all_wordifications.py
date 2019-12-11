@@ -101,3 +101,24 @@ def test_all_wordifications_is_uppercase(number: str, vocab: Set[str]) -> None:
     for word in phonewords:
         if word.upper() != word:
             raise ValueError("Word '%s' contains lowercase letters." % word)
+
+
+def test_all_wordifications_manual() -> None:
+    """ Manual check. """
+    number = "1-800-222-3333"
+
+    with open("data/google-10000-english.txt", "r") as vocab_file:
+        vocab = vocab_file.readlines()
+        vocab = [token.strip() for token in vocab]
+    # Read in the letter mapping.
+    with open("telephone/settings/mapping.json", "r") as mapping:
+        letter_map = json.load(mapping)
+    vocab_map = compute_vocab_map(vocab, letter_map)
+    phonewords: Set[str] = all_wordifications(number, vocab_map)
+    for word in phonewords:
+        translated_number = words_to_number(word, letter_map)
+        if translated_number != number:
+            found_mismatch = True
+            raise ValueError(
+                "Result '%s' does not match '%s'." % (translated_number, number)
+            )

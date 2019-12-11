@@ -209,7 +209,17 @@ def get_country_code_and_base(number: str) -> Tuple[str, str]:
 
 
 def insert_dashes(spaced_phoneword: str) -> str:
-    """ Inserts dashes between appropriate segments of a US phoneword. """
+    """
+    Inserts dashes between appropriate segments of a US phoneword.
+
+    Parameters
+    ----------
+    spaced_phoneword : ``str``.
+        Of the form ``1&123ABC&DEF``. Contains spacers and alphanumerics.
+
+    phoneword : ``str``.
+        With dashes added.
+    """
     # TODO: Make format an argument.
     # TODO: Split into a validation function for dashless phonewords.
     # 1. Insert `^` characters where dashes go according to the format.
