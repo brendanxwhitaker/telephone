@@ -1,16 +1,14 @@
 """ Tests for the ``words_to_number()`` function. """
-import json
-
 import hypothesis.strategies as st
 from hypothesis import given
 
 from telephone.words_to_number import words_to_number
 from telephone.utils import find_occurrences, generate_phoneword
-from telephone.tests.test_constants import TEST_FORMAT
+from telephone.tests.test_constants import US_MAP, GENERAL_FORMAT
 
 
-@given(st.data())
-def test_words_to_number_places_dashes_correctly(data) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_words_to_number_places_dashes_correctly(data, numformat: str) -> None:
     """
     Tests that we generate numbers with the dashes in the right place.
 
@@ -21,19 +19,15 @@ def test_words_to_number_places_dashes_correctly(data) -> None:
         with ``1`` and ends with an alphanumeric character. At most 1 dash in a row.
         e.g. ``1-ALPHA-54792-BRAVO``.
     """
-    phoneword = generate_phoneword(data)
-
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
+    phoneword = generate_phoneword(data, numformat=numformat)
 
     # Translate to a number.
-    number = words_to_number(phoneword, letter_map)
-    assert find_occurrences(number, "-") == find_occurrences(TEST_FORMAT, "-")
+    number = words_to_number(phoneword, letter_map=US_MAP, numformat=numformat)
+    assert find_occurrences(number, "-") == find_occurrences(numformat, "-")
 
 
-@given(st.data())
-def test_words_to_number_output_is_numeric(data) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_words_to_number_output_is_numeric(data, numformat: str) -> None:
     """
     Tests that the function doesn't return anything with letters in it.
 
@@ -44,17 +38,14 @@ def test_words_to_number_output_is_numeric(data) -> None:
         with ``1`` and ends with an alphanumeric character. At most 1 dash in a row.
         e.g. ``1-ALPHA-54792-BRAVO``.
     """
-    phoneword = generate_phoneword(data)
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    number = words_to_number(phoneword, letter_map)
-    number_no_dashes = number.replace("-", "")
-    assert number_no_dashes.isnumeric()
+    phoneword = generate_phoneword(data, numformat=numformat)
+    number = words_to_number(phoneword, letter_map=US_MAP, numformat=numformat)
+    dashless_number = number.replace("-", "")
+    assert dashless_number.isnumeric()
 
 
-@given(st.data())
-def test_words_to_number_yields_correct_length(data) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_words_to_number_yields_correct_length(data, numformat: str) -> None:
     """
     Tests that we generate numbers with the correct length.
 
@@ -65,9 +56,12 @@ def test_words_to_number_yields_correct_length(data) -> None:
         with ``1`` and ends with an alphanumeric character. At most 1 dash in a row.
         e.g. ``1-ALPHA-54792-BRAVO``.
     """
-    phoneword = generate_phoneword(data)
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    number = words_to_number(phoneword, letter_map)
-    assert len(number) == len(TEST_FORMAT)
+    phoneword = generate_phoneword(data, numformat=numformat)
+    number = words_to_number(phoneword, letter_map=US_MAP, numformat=numformat)
+    assert len(number) == len(numformat)
+
+
+def test_words_to_number_manual() -> None:
+    """ Manual test. """
+    number = words_to_number("1-877-KARS-4-KIDS", US_MAP)
+    assert number == "1-877-527-7454"

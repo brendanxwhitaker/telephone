@@ -6,6 +6,7 @@ from telephone.utils import (
     get_substring_starting_index_map,
     insert_dashes,
 )
+from telephone.tests.test_constants import US_FORMAT
 
 # pylint: disable=bad-continuation
 
@@ -92,6 +93,9 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
     # Note that at this point, the phonewords may have spacer tokens in them.
     complete_phonewords = {word.upper() for word, _ in phoneword_map[0]}
     complete_phonewords = {country_code + spacer + word for word in complete_phonewords}
-    dashed_phonewords = {insert_dashes(word) for word in complete_phonewords}
+    # TODO: Use format inference.
+    dashed_phonewords = {
+        insert_dashes(word, spacer, numformat=US_FORMAT) for word in complete_phonewords
+    }
 
     return dashed_phonewords

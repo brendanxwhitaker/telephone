@@ -6,48 +6,67 @@ from hypothesis import given
 
 from telephone.utils import find_occurrences, generate_spaced_phoneword, insert_dashes
 from telephone.tests.test_constants import (
-    US_ALPHANUMERIC,
-    US_NUMBER_NODASH,
-    TEST_FORMAT,
+    GENERAL_FORMAT,
 )
 
 
-@given(st.from_regex(US_ALPHANUMERIC, fullmatch=True))
-def test_insert_dashes_doesnt_doubledash(phoneword_no_dashes: str) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_insert_dashes_doesnt_doubledash(data, numformat: str) -> None:
     """ TODO. """
-    dashed = insert_dashes(phoneword_no_dashes)
+    dashless_format = numformat.replace("-", "")
+    dashless_phoneword = data.draw(
+        st.from_regex(r"[A-Z0-9]{%d}" % len(dashless_format), fullmatch=True)
+    )
+    dashed = insert_dashes(dashless_phoneword, spacer="&", numformat=numformat)
     assert "--" not in dashed
 
 
-@given(st.from_regex(US_ALPHANUMERIC, fullmatch=True))
-def test_insert_dashes_is_uppercase(phoneword_no_dashes: str) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_insert_dashes_is_uppercase(data, numformat: str) -> None:
     """ TODO. """
-    dashed = insert_dashes(phoneword_no_dashes)
+    dashless_format = numformat.replace("-", "")
+    dashless_phoneword = data.draw(
+        st.from_regex(r"[A-Z0-9]{%d}" % len(dashless_format), fullmatch=True)
+    )
+    dashed = insert_dashes(dashless_phoneword, spacer="&", numformat=numformat)
     assert not re.search(r"[a-z]", dashed)
 
 
-@given(st.from_regex(US_ALPHANUMERIC, fullmatch=True))
-def test_insert_dashes_keeps_dashes_inside(phoneword_no_dashes: str) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_insert_dashes_keeps_dashes_inside(data, numformat: str) -> None:
     """ Make sure it doesn't put dashes at the ends. """
-    dashed = insert_dashes(phoneword_no_dashes)
+    dashless_format = numformat.replace("-", "")
+    dashless_phoneword = data.draw(
+        st.from_regex(r"[A-Z0-9]{%d}" % len(dashless_format), fullmatch=True)
+    )
+    dashed = insert_dashes(dashless_phoneword, spacer="&", numformat=numformat)
     assert not re.search(r"(^-)|(-$)", dashed)
 
 
-@given(st.from_regex(US_NUMBER_NODASH, fullmatch=True))
-def test_insert_dashes_places_dashes_correctly(phoneword_no_dashes: str) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_insert_dashes_places_dashes_correctly(data, numformat: str) -> None:
     """ Make sure a classical phone number is treated correctly. """
-    dashed = insert_dashes(phoneword_no_dashes)
-    assert find_occurrences(dashed, "-") == find_occurrences(TEST_FORMAT, "-")
+    dashless_format = numformat.replace("-", "")
+    dashless_number = data.draw(
+        st.from_regex(r"[0-9]{%d}" % len(dashless_format), fullmatch=True)
+    )
+    dashed = insert_dashes(dashless_number, spacer="&", numformat=numformat)
+    try:
+        assert find_occurrences(dashed, "-") == find_occurrences(numformat, "-")
+    except AssertionError:
+        raise ValueError("Dash mismatch in '%s'." % dashed)
 
 
-@given(st.data())
-def test_insert_dashes_handles_spacers(data) -> None:
+@given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
+def test_insert_dashes_handles_spacers(data, numformat: str) -> None:
     """ Make sure spacers are replaced with dashes. """
     spacer = "&"
-    spaced_phoneword = generate_spaced_phoneword(data)
+    spaced_phoneword = generate_spaced_phoneword(
+        data, numformat=numformat, spacer=spacer
+    )
     segments = spaced_phoneword.split(spacer)
     letter_segments = [re.sub(r"[0-9]", "", segment) for segment in segments]
-    phoneword = insert_dashes(spaced_phoneword)
+    phoneword = insert_dashes(spaced_phoneword, spacer=spacer, numformat=numformat)
     dashed_segments = phoneword.split("-")
     for segment in letter_segments:
         if segment and segment not in dashed_segments:
