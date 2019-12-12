@@ -7,8 +7,9 @@ from hypothesis import given
 from telephone.number_to_words import number_to_words
 from telephone.words_to_number import words_to_number
 from telephone.tests.test_constants import (
-    US_MAP,
+    US_LETTER_MAP,
     US_NUMBER,
+    US_FORMAT,
     US_ALPHANUMERIC,
     UPPERCASE_ALPHA,
     LOWERCASE_ALPHA,
@@ -32,7 +33,7 @@ def test_number_to_words_generates_alphanumerics(number: str, vocab: Set[str]) -
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    phoneword = number_to_words(number, vocab, US_MAP)
+    phoneword = number_to_words(number, US_FORMAT, vocab, US_LETTER_MAP)
     phoneword_no_dashes = phoneword.replace("-", "")
     assert US_ALPHANUMERIC.match(phoneword_no_dashes)
 
@@ -52,7 +53,7 @@ def test_number_to_words_stays_in_vocabulary(number: str, vocab: Set[str]) -> No
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    phoneword = number_to_words(number, vocab, US_MAP)
+    phoneword = number_to_words(number, US_FORMAT, vocab, US_LETTER_MAP)
     matches: List[str] = UPPERCASE_ALPHA.findall(phoneword)
 
     found_invalid = False
@@ -80,6 +81,16 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    phoneword = number_to_words(number, vocab, US_MAP)
-    resultant_number = words_to_number(phoneword, US_MAP)
+    phoneword = number_to_words(number, US_FORMAT, vocab, US_LETTER_MAP)
+    resultant_number = words_to_number(phoneword, US_LETTER_MAP)
+    assert number == resultant_number
+
+
+@given(st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)))
+def test_number_to_words_manual(vocab: Set[str]) -> None:
+    """ Manual generation test. """
+    number = "0-000-000"
+    numformat = "0-000-000"
+    phoneword = number_to_words(number, numformat, vocab, US_LETTER_MAP)
+    resultant_number = words_to_number(phoneword, US_LETTER_MAP, numformat)
     assert number == resultant_number

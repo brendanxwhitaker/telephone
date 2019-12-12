@@ -3,6 +3,7 @@ import random
 import hypothesis.strategies as st
 from telephone.utils import insert_dashes, get_country_code_and_base
 
+
 def generate_phoneword(data, numformat: str) -> str:
     """
     Generates an arbitrary phoneword given a hypothesis data object.
