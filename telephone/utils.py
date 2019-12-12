@@ -1,10 +1,7 @@
 """ Auxiliary functions for translation and testing. """
 import re
-import random
 import itertools
 from typing import List, Set, Dict, Tuple
-
-import hypothesis.strategies as st
 
 # pylint: disable=bad-continuation
 
@@ -14,6 +11,8 @@ FUNCTION_CHARACTERS = set(list("-"))
 
 def find_occurrences(string: str, char: str) -> List[int]:
     """ Returns a list of all occurrences of ``char`` in ``string`` in order. """
+    if len(char) != 1:
+        raise ValueError("Argument char '%s' must have length 1." % char)
     return [i for i, letter in enumerate(string) if letter == char]
 
 
@@ -70,6 +69,8 @@ def compute_vocab_map(
     # Construct vocab_map.
     vocab_map: Dict[str, List[str]] = {}
     for token in vocabulary:
+        if not token.isalpha():
+            raise ValueError("Vocabulary word '%s' contains non-alpha chars." % token)
         uppercased_token = token.upper()
         tokenhash = "".join([letter_map[char] for char in uppercased_token])
         if tokenhash in vocab_map:
@@ -78,66 +79,6 @@ def compute_vocab_map(
             vocab_map[tokenhash] = [uppercased_token]
 
     return vocab_map
-
-
-def generate_phoneword(data, numformat: str) -> str:
-    """
-    Generates an arbitrary phoneword given a hypothesis data object.
-
-    Parameters
-    ----------
-    data : ``st._internal.core.DataObject``.
-        Hypothesis data generator.
-
-    Returns
-    -------
-    phoneword : ``str``.
-        Of the form ``1-123-ABC-DEF-456``. Contains dashes and alphanumerics.
-    """
-    spacer = "&"
-    spaced_phoneword = generate_spaced_phoneword(data, numformat, spacer)
-
-    # Throw in dashes.
-    phoneword = insert_dashes(spaced_phoneword, spacer=spacer, numformat=numformat)
-
-    return phoneword
-
-
-def generate_spaced_phoneword(data, numformat: str, spacer: str) -> str:
-    """
-    Generates an arbitrary phoneword with spacers between consecutive alpha words
-    to simulate input to ``insert_dashes()``.
-
-    Parameters
-    ----------
-    data : ``st._internal.core.DataObject``.
-        Hypothesis data generator.
-
-    Returns
-    -------
-    spaced_phoneword : ``str``.
-        Of the form ``1&123ABC&DEF``. Contains spacers and alphanumerics.
-    """
-
-    spaced_phoneword = ""
-    country_code, base_format = get_country_code_and_base(numformat)
-    dashless_format = base_format.replace("-", "")
-    segment_lengths = [len(seg) for seg in base_format.split("-")]
-
-    for seg_len in segment_lengths:
-        seed = random.randint(0, 10000)
-        if seed % 2 == 0:
-            segment = data.draw(st.from_regex("[0-9]{%d}" % seg_len, fullmatch=True))
-        else:
-            segment = data.draw(st.from_regex("[A-Z]{%d}" % seg_len, fullmatch=True))
-        if spaced_phoneword and spaced_phoneword[0].isalpha():
-            spaced_phoneword = segment + spacer + spaced_phoneword
-        else:
-            spaced_phoneword = segment + spaced_phoneword
-    assert len(spaced_phoneword.replace(spacer, "")) == len(dashless_format)
-    spaced_phoneword = country_code + spacer + spaced_phoneword
-
-    return spaced_phoneword
 
 
 def get_country_code_and_base(number: str) -> Tuple[str, str]:
@@ -235,7 +176,6 @@ def insert_dashes(spaced_phoneword: str, spacer: str, numformat: str) -> str:
     # Remove remaining delimiters.
     phoneword = delim_phoneword.replace(delim, "")
 
-    # TODO: Don't do substitution on the country code.
     # Treat the country code, hardcoded for US ``1`` for now.
     country_code_length = len(numformat.split("-")[0])
     base = phoneword[country_code_length + 1 :]

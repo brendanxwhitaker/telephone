@@ -2,8 +2,9 @@
 import hypothesis.strategies as st
 from hypothesis import given
 
+from telephone.utils import find_occurrences
 from telephone.words_to_number import words_to_number
-from telephone.utils import find_occurrences, generate_phoneword
+from telephone.tests.generators import generate_phoneword
 from telephone.tests.test_constants import US_MAP, GENERAL_FORMAT
 
 

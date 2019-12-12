@@ -4,10 +4,9 @@ import re
 import hypothesis.strategies as st
 from hypothesis import given
 
-from telephone.utils import find_occurrences, generate_spaced_phoneword, insert_dashes
-from telephone.tests.test_constants import (
-    GENERAL_FORMAT,
-)
+from telephone.utils import find_occurrences, insert_dashes
+from telephone.tests.generators import generate_spaced_phoneword
+from telephone.tests.test_constants import GENERAL_FORMAT
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))

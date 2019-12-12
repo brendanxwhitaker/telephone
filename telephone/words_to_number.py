@@ -2,6 +2,7 @@
 from typing import List, Dict
 from telephone.utils import insert_dashes
 from telephone.tests.test_constants import US_FORMAT, US_MAP
+
 # pylint: disable=bad-continuation
 
 
