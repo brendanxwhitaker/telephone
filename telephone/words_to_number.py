@@ -1,13 +1,16 @@
 """ Translation of phonewords to US phone numbers. """
 from typing import List, Dict
 from telephone.utils import insert_dashes
-from telephone.tests.test_constants import US_FORMAT, US_MAP
+from telephone.tests.test_constants import US_FORMAT, US_LETTER_MAP
 
 # pylint: disable=bad-continuation
 
 
+# TODO: Make ``numformat`` the second argument.
 def words_to_number(
-    phoneword: str, letter_map: Dict[str, str] = US_MAP, numformat: str = US_FORMAT
+    phoneword: str,
+    letter_map: Dict[str, str] = US_LETTER_MAP,
+    numformat: str = US_FORMAT,
 ) -> str:
     """
     Maps a phoneword back to the origin phone number.
@@ -18,6 +21,8 @@ def words_to_number(
         A valid US phone number with some of its digits replaced by uppercase alpha
         characters. Contiguous sequences of alpha characters are separated by dashes.
     """
+    if phoneword == "":
+        return ""
     if phoneword.upper() != phoneword:
         raise ValueError("Word '%s' contains lowercase letters." % phoneword)
 

@@ -1,17 +1,21 @@
 """ A function to generate all possible phonewords from a given number. """
-from typing import Set, Dict, List, Tuple
+import re
+from typing import Set, Dict, List, Tuple, Optional
 
 from telephone.utils import (
+    validate,
+    get_vocab_map,
     get_country_code_and_base,
     get_substring_starting_index_map,
     insert_dashes,
 )
-from telephone.tests.test_constants import US_FORMAT
 
-# pylint: disable=bad-continuation
+# pylint: disable=bad-continuation, too-many-locals, too-many-nested-blocks
 
 
-def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]:
+def all_wordifications(
+    number: str, numformat: str = "", vocab_map: Optional[Dict[str, List[str]]] = None
+) -> Set[str]:
     """
     Generates all phonewords from ``number`` using words from ``vocabulary``.
 
@@ -26,10 +30,21 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
 
     Returns
     -------
-    dashed_phonewords : ``Set[str]``.
+    phonewords : ``Set[str]``.
         The set of all possible phonewords which can be generated from ``number`` with
         the given ``vocab_map``. All letters are uppercase.
     """
+    validate(number)
+    if number == "":
+        return set([])
+
+    vocabulary_map: Dict[
+        str, List[str]
+    ] = get_vocab_map() if vocab_map is None else vocab_map
+
+    # Format inference.
+    if numformat == "":
+        numformat = re.sub(r"[0-9]", "0", number)
 
     spacer = "&"
     country_code, base_number = get_country_code_and_base(number)
@@ -38,13 +53,13 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
     # Gives the list of all phonewords for ``base_number[i:]``.
     phoneword_map: Dict[int, List[Tuple[str, int]]] = {}
 
-    # TODO: Optimizations. If ``previous_list`` is sorted, then ``gap`` will get larger
+    # NOTE: Optimizations. If ``previous_list`` is sorted, then ``gap`` will get larger
     # as we iterate over it. So all ``gap_substrs`` lists will be subsets of the
-    # subsequent one. But does this actually take any time? Only if ``vocab_map``
+    # subsequent one. But does this actually take any time? Only if ``vocabulary_map``
     # contains many collisions.
 
     # Tuples are of the form (substr, index of first non-numeric character).
-    # TODO: Lists should be sorted by order of indices.
+    # NOTE: Lists should be sorted by order of indices.
     phoneword_map[len(base_number)] = [("", len(base_number))]
     i = len(base_number) - 1
     while i >= 0:
@@ -68,10 +83,9 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
             # For each substring of ``gap`` which includes first char of ``gap``.
             for gap_substr in gap_substrs:
 
-                # TODO: Can we make this its own function?
                 # If the substring has 1 or more wordifications, grab them as a list.
-                if gap_substr in vocab_map:
-                    substr_wordifications: List[str] = vocab_map[gap_substr]
+                if gap_substr in vocabulary_map:
+                    substr_wordifications: List[str] = vocabulary_map[gap_substr]
 
                     # For each word in the list, make the substitution and add to list.
                     for word in substr_wordifications:
@@ -91,11 +105,8 @@ def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]
         i -= 1
 
     # Note that at this point, the phonewords may have spacer tokens in them.
-    complete_phonewords = {word.upper() for word, _ in phoneword_map[0]}
-    complete_phonewords = {country_code + spacer + word for word in complete_phonewords}
-    # TODO: Use format inference.
-    dashed_phonewords = {
-        insert_dashes(word, spacer, numformat=US_FORMAT) for word in complete_phonewords
-    }
+    phonewords = {word.upper() for word, _ in phoneword_map[0]}
+    phonewords = {country_code + spacer + word for word in phonewords}
+    phonewords = {insert_dashes(word, spacer, numformat) for word in phonewords}
 
-    return dashed_phonewords
+    return phonewords

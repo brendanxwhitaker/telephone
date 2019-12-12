@@ -12,4 +12,4 @@ GENERAL_FORMAT = re.compile(r"^0+(-0+)+$")
 US_FORMAT = "0-000-000-0000"
 TEST_FORMAT = US_FORMAT
 with open("telephone/settings/mapping.json", "r") as MAPPING_FILE:
-    US_MAP = json.load(MAPPING_FILE)
+    US_LETTER_MAP = json.load(MAPPING_FILE)

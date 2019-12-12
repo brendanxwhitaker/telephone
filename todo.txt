@@ -5,14 +5,14 @@
 4. Fix given generation code for skipped tests. (DONE)
 5. Implement ``number_to_words()``. (DONE)
 6. Move some functions out of ``all_wordifications.py`` and decide what to name this file. (DONE)
-7. Write some old-fashioned tests.
+7. Write some old-fashioned tests. (DONE)
 8. Decide how to rename test constants. (DONE)
 9. Write out assumptions.
-10. Fix validation and country-base split functionality.
+10. Fix validation and country-base split functionality. (DONE)
 11. Make arguments optional and auto-download data to a ``data/`` folder.
 12. Add ``data/`` to ``.gitignore``. (DONE)
 13. Complete all inline TODOs.
 14. Test for arbitrary letter maps.
-14. Add a ``generators.py``?
-15. Polish documentation.
-16. Update README.
+15. Add a ``generators.py``. (DONE)
+16. Polish documentation.
+17. Update README.

@@ -46,6 +46,16 @@ def get_substring_length_map(number: str) -> Dict[int, List[str]]:
     return substring_length_map
 
 
+def get_vocabulary() -> Set[str]:
+    """ TODO. """
+    raise NotImplementedError
+
+
+def get_vocab_map() -> Dict[str, List[str]]:
+    """ TODO. """
+    raise NotImplementedError
+
+
 def compute_vocab_map(
     vocabulary: Set[str], letter_map: Dict[str, str]
 ) -> Dict[str, List[str]]:
@@ -81,7 +91,7 @@ def compute_vocab_map(
     return vocab_map
 
 
-def get_country_code_and_base(number: str) -> Tuple[str, str]:
+def validate(number: str) -> None:
     """
     Determines if a string COULD be a valid phone number according to a general format.
 
@@ -91,23 +101,19 @@ def get_country_code_and_base(number: str) -> Tuple[str, str]:
         A valid US phone number with country code and dashes. Note that this check is
         intended to be a redundancy only.
 
-    Returns
-    -------
-    sanitized_number : ``str``.
-        The input but without whitespace or anything except numerals.
-
     Raises
     ------
     ValueError.
         If the input contains invalid characters or sequences.
     """
 
-    # Strip whitespace.
-    stripped_number = "".join(number.split())
+    # Treat empty string.
+    if number == "":
+        return
 
     # Check for invalid characters.
     for char in FUNCTION_CHARACTERS:
-        sanitized_number = stripped_number.replace(char, "")
+        sanitized_number = number.replace(char, "")
     if not sanitized_number.isnumeric():
         raise ValueError(
             "The number '%s' contains invalid characters. " % number
@@ -118,13 +124,19 @@ def get_country_code_and_base(number: str) -> Tuple[str, str]:
     fn_combs = itertools.combinations_with_replacement(FUNCTION_CHARACTERS, 2)
     fn_strs = ["".join(comb) for comb in fn_combs]
     for fn_str in fn_strs:
-        if fn_str in stripped_number:
+        if fn_str in number:
             raise ValueError(
                 "Invalid arrangement '%s' of function characters from '%s' in '%s'."
-                % (fn_str, str(FUNCTION_CHARACTERS), stripped_number)
+                % (fn_str, str(FUNCTION_CHARACTERS), number)
             )
 
-    segments = stripped_number.split("-")
+
+def get_country_code_and_base(number: str) -> Tuple[str, str]:
+    """ Splits on the first dash. """
+    # Treat empty string.
+    if number == "":
+        return "", ""
+    segments = number.split("-")
     country_code = segments[0]
     base_number = "".join(segments[1:])
 
