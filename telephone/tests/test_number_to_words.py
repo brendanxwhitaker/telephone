@@ -1,5 +1,4 @@
 """ Tests for the ``number_to_words()`` function. """
-import json
 from typing import List, Set
 
 import hypothesis.strategies as st
@@ -8,6 +7,7 @@ from hypothesis import given
 from telephone.number_to_words import number_to_words
 from telephone.words_to_number import words_to_number
 from telephone.tests.test_constants import (
+    US_MAP,
     US_NUMBER,
     US_ALPHANUMERIC,
     UPPERCASE_ALPHA,
@@ -32,11 +32,7 @@ def test_number_to_words_generates_alphanumerics(number: str, vocab: Set[str]) -
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-
-    phoneword = number_to_words(number, vocab, letter_map)
+    phoneword = number_to_words(number, vocab, US_MAP)
     phoneword_no_dashes = phoneword.replace("-", "")
     assert US_ALPHANUMERIC.match(phoneword_no_dashes)
 
@@ -56,11 +52,7 @@ def test_number_to_words_stays_in_vocabulary(number: str, vocab: Set[str]) -> No
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-
-    phoneword = number_to_words(number, vocab, letter_map)
+    phoneword = number_to_words(number, vocab, US_MAP)
     matches: List[str] = UPPERCASE_ALPHA.findall(phoneword)
 
     found_invalid = False
@@ -88,9 +80,6 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    phoneword = number_to_words(number, vocab, letter_map)
-    resultant_number = words_to_number(phoneword, letter_map)
+    phoneword = number_to_words(number, vocab, US_MAP)
+    resultant_number = words_to_number(phoneword, US_MAP)
     assert number == resultant_number

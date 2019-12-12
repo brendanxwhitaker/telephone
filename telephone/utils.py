@@ -6,8 +6,6 @@ from typing import List, Set, Dict, Tuple
 
 import hypothesis.strategies as st
 
-from telephone.tests.test_constants import TEST_FORMAT
-
 # pylint: disable=bad-continuation
 
 VALID_CHARACTERS = set(list(" -0123456789"))
@@ -82,7 +80,7 @@ def compute_vocab_map(
     return vocab_map
 
 
-def generate_phoneword(data) -> str:
+def generate_phoneword(data, numformat: str) -> str:
     """
     Generates an arbitrary phoneword given a hypothesis data object.
 
@@ -96,28 +94,16 @@ def generate_phoneword(data) -> str:
     phoneword : ``str``.
         Of the form ``1-123-ABC-DEF-456``. Contains dashes and alphanumerics.
     """
-    # TODO: Add format.
-
-    dashless_phoneword = ""
-    dashless_format = TEST_FORMAT.replace("-", "")
-    while len(dashless_phoneword) < len(dashless_format):
-        seed = random.randint(0, 10000)
-        remaining_length = len(dashless_format) - len(dashless_phoneword)
-        if seed % 2 == 0:
-            segment = data.draw(st.from_regex(r"[0-9]+", fullmatch=True))
-        else:
-            segment = data.draw(st.from_regex(r"[A-Z]+", fullmatch=True))
-        segment = segment[:remaining_length]
-        dashless_phoneword = segment + dashless_phoneword
-    assert len(dashless_phoneword) == len(dashless_format)
+    spacer = "&"
+    spaced_phoneword = generate_spaced_phoneword(data, numformat, spacer)
 
     # Throw in dashes.
-    phoneword = insert_dashes(dashless_phoneword)
+    phoneword = insert_dashes(spaced_phoneword, spacer=spacer, numformat=numformat)
 
     return phoneword
 
 
-def generate_spaced_phoneword(data) -> str:
+def generate_spaced_phoneword(data, numformat: str, spacer: str) -> str:
     """
     Generates an arbitrary phoneword with spacers between consecutive alpha words
     to simulate input to ``insert_dashes()``.
@@ -132,26 +118,22 @@ def generate_spaced_phoneword(data) -> str:
     spaced_phoneword : ``str``.
         Of the form ``1&123ABC&DEF``. Contains spacers and alphanumerics.
     """
-    # TODO: Add format.
 
-    spacer = "&"
     spaced_phoneword = ""
-    country_code, base_format = get_country_code_and_base(TEST_FORMAT)
+    country_code, base_format = get_country_code_and_base(numformat)
     dashless_format = base_format.replace("-", "")
-    remaining_length = len(dashless_format)
-    while remaining_length > 0:
+    segment_lengths = [len(seg) for seg in base_format.split("-")]
+
+    for seg_len in segment_lengths:
         seed = random.randint(0, 10000)
         if seed % 2 == 0:
-            segment = data.draw(st.from_regex(r"[0-9]+", fullmatch=True))
+            segment = data.draw(st.from_regex("[0-9]{%d}" % seg_len, fullmatch=True))
         else:
-            segment = data.draw(st.from_regex(r"[A-Z]+", fullmatch=True))
-        segment = segment[:remaining_length]
+            segment = data.draw(st.from_regex("[A-Z]{%d}" % seg_len, fullmatch=True))
         if spaced_phoneword and spaced_phoneword[0].isalpha():
             spaced_phoneword = segment + spacer + spaced_phoneword
         else:
             spaced_phoneword = segment + spaced_phoneword
-        remaining_length -= len(segment)
-        print(spaced_phoneword)
     assert len(spaced_phoneword.replace(spacer, "")) == len(dashless_format)
     spaced_phoneword = country_code + spacer + spaced_phoneword
 
@@ -208,7 +190,7 @@ def get_country_code_and_base(number: str) -> Tuple[str, str]:
     return country_code, base_number
 
 
-def insert_dashes(spaced_phoneword: str) -> str:
+def insert_dashes(spaced_phoneword: str, spacer: str, numformat: str) -> str:
     """
     Inserts dashes between appropriate segments of a US phoneword.
 
@@ -220,25 +202,25 @@ def insert_dashes(spaced_phoneword: str) -> str:
     phoneword : ``str``.
         With dashes added.
     """
-    # TODO: Make format an argument.
     # TODO: Split into a validation function for dashless phonewords.
     # 1. Insert `^` characters where dashes go according to the format.
     # 2. Insert a dash before every inserted word.
     # 3. Replace re.sub(r"([A-Z])^([A-Z])", "\1\2", <string>).
-    spacer = "&"
     delim = "*"
-    US_FORMAT = "0-000-000-0000"
+    assert spacer != delim
 
     # Validate input.
     phoneword = spaced_phoneword
     if re.search("[^A-Z0-9%s]" % spacer, phoneword):
-        raise ValueError("Word '%s' should only contain '[A-Z0-9&]'." % phoneword)
-    assert len(US_FORMAT.replace("-", "")) == len(phoneword.replace(spacer, ""))
+        raise ValueError(
+            "Word '%s' should only contain '[A-Z0-9%s]'." % (phoneword, spacer)
+        )
+    assert len(numformat.replace("-", "")) == len(phoneword.replace(spacer, ""))
 
     # Add delimiters (``*``).
     # Format map: "0-000" -> "0-0*0*0".
     # Phoneword map: "123ABC&DEF" -> "1*2*3*A*B*C&D*E*F".
-    delim_format = re.sub("([0-9])(?!(%s|$))" % "-", r"\1" + delim, US_FORMAT)
+    delim_format = re.sub("([0-9])(?!(%s|$))" % "-", r"\1" + delim, numformat)
     delim_phoneword = re.sub("([A-Z0-9])(?!(%s|$))" % spacer, r"\1" + delim, phoneword)
     assert len(delim_format) == len(delim_phoneword)
 
@@ -255,15 +237,16 @@ def insert_dashes(spaced_phoneword: str) -> str:
 
     # TODO: Don't do substitution on the country code.
     # Treat the country code, hardcoded for US ``1`` for now.
-    base = phoneword[2:]
+    country_code_length = len(numformat.split("-")[0])
+    base = phoneword[country_code_length + 1 :]
 
     # Add dashes at borders between digits and letters.
     base = re.sub(r"([0-9]+)([A-Z]+)", r"\1-\2", base)
     base = re.sub(r"([A-Z]+)([0-9]+)", r"\1-\2", base)
 
     # Kill dashes within words (but not spacers, which separate adjacent words).
-    base = re.sub(r"([A-Z])-([A-Z])", r"\1\2", base)
-    phoneword = phoneword[:2] + base
+    base = re.sub(r"([A-Z])-(?=[A-Z])", r"\1", base)
+    phoneword = phoneword[: country_code_length + 1] + base
 
     # Replace spacers with dashes.
     phoneword = phoneword.replace(spacer, "-")

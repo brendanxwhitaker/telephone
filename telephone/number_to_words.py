@@ -1,8 +1,12 @@
 """ A function to generate phonewords. """
 from typing import Set, List, Dict
 
-from telephone.all_wordifications import insert_dashes
-from telephone.utils import get_country_code_and_base, get_substring_length_map
+from telephone.utils import (
+    insert_dashes,
+    get_country_code_and_base,
+    get_substring_length_map,
+)
+from telephone.tests.test_constants import US_FORMAT
 
 # pylint: disable=bad-continuation
 
@@ -34,6 +38,9 @@ def number_to_words(
                 if substr == tokenhash:
                     phoneword = base_number.replace(substr, uppercased_token, 1)
                     break
-    phoneword = insert_dashes(country_code + spacer + phoneword)
+    # TODO: Format inference.
+    phoneword = insert_dashes(
+        country_code + spacer + phoneword, spacer=spacer, numformat=US_FORMAT
+    )
 
     return phoneword

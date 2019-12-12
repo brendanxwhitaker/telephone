@@ -1,9 +1,13 @@
 """ Translation of phonewords to US phone numbers. """
 from typing import List, Dict
 from telephone.utils import insert_dashes
+from telephone.tests.test_constants import US_FORMAT, US_MAP
+# pylint: disable=bad-continuation
 
 
-def words_to_number(phoneword: str, letter_map: Dict[str, str]) -> str:
+def words_to_number(
+    phoneword: str, letter_map: Dict[str, str] = US_MAP, numformat: str = US_FORMAT
+) -> str:
     """
     Maps a phoneword back to the origin phone number.
 
@@ -30,7 +34,9 @@ def words_to_number(phoneword: str, letter_map: Dict[str, str]) -> str:
         else:
             segment_hash = segment
         translated_segments.append(segment_hash)
-    translated_number_no_dashes = "".join(translated_segments)
-    number = insert_dashes(translated_number_no_dashes)
+    translated_dashless_number = "".join(translated_segments)
+    dashless_format = numformat.replace("-", "")
+    translated_dashless_number = translated_dashless_number[: len(dashless_format)]
+    number = insert_dashes(translated_dashless_number, spacer="&", numformat=numformat)
 
     return number

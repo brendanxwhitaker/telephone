@@ -1,18 +1,19 @@
 """ Tests for the ``words_to_number()`` function. """
 import re
-import json
 import datetime
 from typing import Set
 
+import pytest # type: ignore
 import hypothesis.strategies as st
 from hypothesis import given, settings
 
 from telephone.all_wordifications import all_wordifications
 from telephone.utils import compute_vocab_map
 from telephone.words_to_number import words_to_number
-from telephone.tests.test_constants import US_NUMBER, LOWERCASE_ALPHA
+from telephone.tests.test_constants import US_NUMBER, LOWERCASE_ALPHA, US_MAP
 
 
+@settings(deadline=datetime.timedelta(milliseconds=20000))
 @given(
     st.from_regex(US_NUMBER, fullmatch=True),
     st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)),
@@ -30,14 +31,11 @@ def test_all_wordifications_output_is_valid(number: str, vocab: Set[str]) -> Non
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    vocab_map = compute_vocab_map(vocab, letter_map)
+    vocab_map = compute_vocab_map(vocab, US_MAP)
     phonewords: Set[str] = all_wordifications(number, vocab_map)
     found_mismatch = False
     for word in phonewords:
-        translated_number = words_to_number(word, letter_map)
+        translated_number = words_to_number(word, US_MAP)
         if translated_number != number:
             found_mismatch = True
             raise ValueError(
@@ -64,11 +62,7 @@ def test_all_wordifications_only_uses_vocab_words(number: str, vocab: Set[str]) 
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    vocab_map = compute_vocab_map(vocab, letter_map)
+    vocab_map = compute_vocab_map(vocab, US_MAP)
     phonewords: Set[str] = all_wordifications(number, vocab_map)
     found_mismatch = False
     for word in phonewords:
@@ -93,30 +87,25 @@ def test_all_wordifications_is_uppercase(number: str, vocab: Set[str]) -> None:
     vocab : ``Set[str]``.
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    vocab_map = compute_vocab_map(vocab, letter_map)
+    vocab_map = compute_vocab_map(vocab, US_MAP)
     phonewords: Set[str] = all_wordifications(number, vocab_map)
     for word in phonewords:
         if word.upper() != word:
             raise ValueError("Word '%s' contains lowercase letters." % word)
 
 
+@pytest.mark.skip
 def test_all_wordifications_manual() -> None:
     """ Manual check. """
     number = "1-800-222-3333"
 
     with open("data/google-10000-english.txt", "r") as vocab_file:
-        vocab = vocab_file.readlines()
-        vocab = [token.strip() for token in vocab]
-    # Read in the letter mapping.
-    with open("telephone/settings/mapping.json", "r") as mapping:
-        letter_map = json.load(mapping)
-    vocab_map = compute_vocab_map(vocab, letter_map)
+        vocab = set(vocab_file.readlines())
+        vocab = {token.strip() for token in vocab}
+    vocab_map = compute_vocab_map(vocab, US_MAP)
     phonewords: Set[str] = all_wordifications(number, vocab_map)
     for word in phonewords:
-        translated_number = words_to_number(word, letter_map)
+        translated_number = words_to_number(word, US_MAP)
         if translated_number != number:
             found_mismatch = True
             raise ValueError(
