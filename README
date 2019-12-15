@@ -2,35 +2,78 @@ Telephone.
 
 An implementation of three functions:
 
-def number_to_words(number: str, vocabulary: Set[str]) -> str:
+def number_to_words(
+    number: str,
+    numformat: str = "",
+    vocabulary: Optional[Set[str]] = None,
+    letter_map: Dict[str, str] = US_LETTER_MAP,
+) -> str:
 
     Takes as an argument a string representing a US phone number and which outputs a
     string which has transformed part or all of the phone number into a single 
     "wordified" phone number that can be typed on a US telephone (for example, a
-    valid output of number_to_words("1-800-724-6837") could be "1-800-PAINTER").
+    valid output of number_to_words("1-800-724-6837") could be "1-800-PAINTER"). 
+    Defaults to an attempt to preserve the format of the input number, a vocabulary of
+    the 10k most frequent US words, and a normal US phone digit map.
 
-    NOTE: Should this be a function in the mathematical sense? Or should it return a
-    random valid phoneword (so it wouldn't be well-defined). Should it take in a 
-    vocabulary as well? If it isn't well-defined, should it be consistent given the 
-    same random seed (if it's picking sections of the number and words to replace them 
-    at random). Note that it should not be idempotent because the output is no longer
-    a valid purely-numerical US phone number.
+    This function does not attempt to compute a ``useful`` phoneword. It attempts to
+    make a nontrivial substitution as efficiently as possible, and thus is guaranteed
+    to make only a single substitution, i.e. use only one vocab word.
 
-def words_to_number(phoneword: str, letter_map: Dict[str, str]) -> str:
+
+def words_to_number(
+    phoneword: str, numformat: str = "", letter_map: Dict[str, str] = US_LETTER_MAP
+) -> str:
 
     Translates a wordified phone number back into a standard US numerical phone number.
+    Defaults to preserving the dash format of the phoneword, and a normal US phone
+    layout for the letter map.
 
-    NOTE: There are many ways to make the replacement. If we want the fastest, it 
+
+def all_wordifications(
+    number: str,
+    numformat: str = "",
+    vocabulary: Optional[Set[str]] = None,
+    letter_map: Dict[str, str] = US_LETTER_MAP,
+) -> Set[str]:
+
+    Computes all wordifications of the valid US phone number ``number`` given a
+    format, vocabulary, and dictionary mapping letters to digits. Defaults to an
+    attempt to preserve the format of the input number, a vocabulary of the 10k most
+    frequent US words, and a normal US phone digit map.
+
+ASSUMPTIONS:
+    ``number``:
+        Always contains country code, nonempty, digits and dashes only.
+
+    ``numformat``:
+        ``0``s and dashes only, always contains country code, nonempty.
+
+    ``vocabulary``:
+        A nonempty set, lowercase, only alpha characters.
+
+    ``letter_map``:
+        Contains exactly 26 keys, which are the uppercase latin alphabet. The values
+        are all digits.
+
+    ``phoneword``:
+        Only alphanumeric characters and dashes. Digits and letters always separated
+        by a dash. Contains country code. Nonempty.
+
+OLD NOTES:
+
+    There are many ways to make the replacement. If we want the fastest, it 
     depends on the use case. If we are running many numbers through at a time, it 
     probably makes the most sense to write a complex regex and compile it at the 
     beginning. But if we're computing many one-off translations, it's quicker (see [1])
     to just use a built in string replace and a dictionary. This has the added benefit
     of being considerably more transparent.
 
-def all_wordifications(number: str, vocab_map: Dict[str, List[str]]) -> Set[str]:
-
-    Computes all wordifications of the valid US phone number ``number`` given a
-    plaintext uncased alpha vocab hashed using some letter map.
-
+    Should this be a function in the mathematical sense? Or should it return a
+    random valid phoneword (so it wouldn't be well-defined). Should it take in a 
+    vocabulary as well? If it isn't well-defined, should it be consistent given the 
+    same random seed (if it's picking sections of the number and words to replace them 
+    at random). Note that it should not be idempotent because the output is no longer
+    a valid purely-numerical US phone number.
 
 [1] https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string

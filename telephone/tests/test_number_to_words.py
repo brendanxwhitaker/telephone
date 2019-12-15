@@ -94,3 +94,12 @@ def test_number_to_words_manual(vocab: Set[str]) -> None:
     phoneword = number_to_words(number, numformat, vocab, US_LETTER_MAP)
     resultant_number = words_to_number(phoneword, numformat, US_LETTER_MAP)
     assert number == resultant_number
+
+
+def test_number_to_words_uses_default_arguments() -> None:
+    """ Manual generation test. """
+    number = "0-000-000"
+    numformat = "0-000-000"
+    phoneword = number_to_words(number)
+    resultant_number = words_to_number(phoneword, numformat)
+    assert number == resultant_number

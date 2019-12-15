@@ -18,6 +18,15 @@ def words_to_number(
     phoneword : ``str``.
         A valid US phone number with some of its digits replaced by uppercase alpha
         characters. Contiguous sequences of alpha characters are separated by dashes.
+    numformat : ``str``.
+        Format of the number using "0" and "-", e.g. "0-000-000-0000" for US numbers.
+    letter_map : ``Dict[str, str]``.
+        Maps uppercase English letters to digits.
+
+    Returns
+    -------
+    number : ``str``.
+        The translated number represented a la ``numformat``.
     """
     if phoneword == "":
         return ""

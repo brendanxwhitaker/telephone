@@ -1,7 +1,7 @@
 """ Tests for the ``words_to_number()`` function. """
 import re
 import datetime
-from typing import Set
+from typing import Set, Dict
 
 import hypothesis.strategies as st
 from hypothesis import given, settings
@@ -14,6 +14,8 @@ from telephone.tests.test_constants import (
     US_LETTER_MAP,
     US_FORMAT,
 )
+
+# pylint: disable=bad-continuation
 
 
 @settings(deadline=datetime.timedelta(milliseconds=20000))
@@ -38,6 +40,46 @@ def test_all_wordifications_output_is_valid(number: str, vocab: Set[str]) -> Non
     found_mismatch = False
     for word in phonewords:
         translated_number = words_to_number(word, US_FORMAT, US_LETTER_MAP)
+        if translated_number != number:
+            found_mismatch = True
+            raise ValueError(
+                "Result '%s' does not match '%s'." % (translated_number, number)
+            )
+
+    assert not found_mismatch
+
+
+@settings(deadline=datetime.timedelta(milliseconds=20000))
+@given(
+    st.from_regex(US_NUMBER, fullmatch=True),
+    st.sets(st.from_regex(LOWERCASE_ALPHA, fullmatch=True)),
+    st.dictionaries(
+        keys=st.from_regex(r"[A-Z]", fullmatch=True),
+        values=st.from_regex(r"[0-9]", fullmatch=True),
+        min_size=26,
+    ),
+)
+def test_all_wordifications_output_handles_arbitrary_letter_map(
+    number: str, vocab: Set[str], letter_map: Dict[str, str]
+) -> None:
+    """
+    Tests that if we first generate all phonewords with ``all_wordifications()`` that
+    ``words_to_number()`` maps all of them back to the origin number. This relies on
+    the correctness of ``word_to_number()``.
+
+    Parameters
+    ----------
+    number : ``str``.
+        A valid US phone number with country code and dashes.
+    vocab : ``Set[str]``.
+        A set of strings consisting of lowercase alpha characters only. All nonempty.
+    letter_map : ``Dict[str, str]``.
+        Maps uppercase English letters to digits.
+    """
+    phonewords: Set[str] = all_wordifications(number, US_FORMAT, vocab, letter_map)
+    found_mismatch = False
+    for word in phonewords:
+        translated_number = words_to_number(word, US_FORMAT, letter_map)
         if translated_number != number:
             found_mismatch = True
             raise ValueError(
@@ -106,6 +148,22 @@ def test_all_wordifications_manual() -> None:
     assert phonewords
     for word in phonewords:
         translated_number = words_to_number(word, numformat, US_LETTER_MAP)
+        if translated_number != number:
+            found_mismatch = True
+            raise ValueError(
+                "Result '%s' does not match '%s'." % (translated_number, number)
+            )
+
+
+def test_all_wordifications_uses_default_arguments() -> None:
+    """ Manual check. """
+    number = "0-000-000"
+    numformat = "0-000-000"
+
+    phonewords: Set[str] = all_wordifications(number)
+    assert phonewords
+    for word in phonewords:
+        translated_number = words_to_number(word, numformat)
         if translated_number != number:
             found_mismatch = True
             raise ValueError(

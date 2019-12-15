@@ -1,8 +1,8 @@
 """ Auxiliary functions for translation and testing. """
 import os
 import re
-import urllib
 import itertools
+import urllib.request
 from typing import List, Set, Dict, Tuple
 
 # pylint: disable=bad-continuation
@@ -56,9 +56,10 @@ def get_substring_length_map(number: str) -> Dict[int, List[str]]:
 def get_vocabulary() -> Set[str]:
     """ TODO. """
     if not os.path.isfile(VOCAB_SAVE_PATH):
-        urllib.request.urlretrieve(VOCAB_URL, VOCAB_SAVE_PATH)  # type: ignore
+        urllib.request.urlretrieve(VOCAB_URL, VOCAB_SAVE_PATH)
     with open(VOCAB_SAVE_PATH, "r") as vocab_file:
         vocabulary = vocab_file.readlines()
+        vocabulary = [word.strip() for word in vocabulary]
     return set(vocabulary)
 
 
@@ -157,6 +158,10 @@ def insert_dashes(spaced_phoneword: str, spacer: str, numformat: str) -> str:
     ----------
     spaced_phoneword : ``str``.
         Of the form ``1&123ABC&DEF``. Contains spacers and alphanumerics.
+    spacer : ``str``.
+        Character to use for preserving word boundaries.
+    numformat : ``str``.
+        Format of the number using "0" and "-", e.g. "0-000-000-0000" for US numbers.
 
     phoneword : ``str``.
         With dashes added.
