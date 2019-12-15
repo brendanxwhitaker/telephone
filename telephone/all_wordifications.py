@@ -28,10 +28,13 @@ def all_wordifications(
     ----------
     number : ``str``.
         A valid US phone number with country code and dashes.
-    vocab_map : ``Dict[str, List[str]]``.
-        A mapping from sequences of numerals to words in a vocabulary which map to them
-        under some ``letter_map`` which maps letters to numbers not necessarily
-        injectively.
+    numformat : ``str``.
+        Format of the number using "0" and "-", e.g. "0-000-000-0000" for US numbers.
+    vocabulary : ``Optional[Set[str]]``.
+        Set of lowercase, alphabetical-only vocabulary words. Pass ``None`` to download
+        and use a default US vocabulary.
+    letter_map : ``Dict[str, str]``.
+        Maps uppercase English letters to digits.
 
     Returns
     -------

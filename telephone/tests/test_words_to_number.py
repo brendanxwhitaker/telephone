@@ -66,3 +66,9 @@ def test_words_to_number_manual() -> None:
     """ Manual test. """
     number = words_to_number("1-877-KARS-4-KIDS", US_FORMAT, US_LETTER_MAP)
     assert number == "1-877-527-7454"
+
+
+def test_words_to_number_uses_default_arguments() -> None:
+    """ Manual test. """
+    number = words_to_number("1-877-KARS-4-KIDS")
+    assert number == "1-877-5277-4-5437"

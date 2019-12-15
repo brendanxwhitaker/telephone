@@ -12,7 +12,7 @@
 11. Make arguments optional and auto-download data to a ``data/`` folder. (DONE)
 12. Add ``data/`` to ``.gitignore``. (DONE)
 13. Complete all inline TODOs. (DONE)
-14. Test for arbitrary letter maps.
+14. Test for arbitrary letter maps. (DONE)
 15. Add a ``generators.py``. (DONE)
-16. Polish documentation.
-17. Update README.
+16. Polish documentation. (DONE)
+17. Update README. (DONE)

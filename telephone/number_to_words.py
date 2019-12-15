@@ -27,8 +27,13 @@ def number_to_words(
     ----------
     number : ``str``.
         A valid US phone number with country code and dashes.
-    vocabulary : ``Set[str]``.
-        A set of strings consisting of lowercase alpha characters only. All nonempty.
+    numformat : ``str``.
+        Format of the number using "0" and "-", e.g. "0-000-000-0000" for US numbers.
+    vocabulary : ``Optional[Set[str]]``.
+        Set of lowercase, alphabetical-only vocabulary words. Pass ``None`` to download
+        and use a default US vocabulary.
+    letter_map : ``Dict[str, str]``.
+        Maps uppercase English letters to digits.
     """
     validate(number)
     if number == "":
