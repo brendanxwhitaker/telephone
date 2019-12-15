@@ -1,5 +1,7 @@
 """ Auxiliary functions for translation and testing. """
+import os
 import re
+import urllib
 import itertools
 from typing import List, Set, Dict, Tuple
 
@@ -7,6 +9,11 @@ from typing import List, Set, Dict, Tuple
 
 VALID_CHARACTERS = set(list(" -0123456789"))
 FUNCTION_CHARACTERS = set(list("-"))
+VOCAB_URL = (
+    "https://raw.githubusercontent.com/first20hours/"
+    + "google-10000-english/master/google-10000-english.txt"
+)
+VOCAB_SAVE_PATH = "data/vocab.txt"
 
 
 def find_occurrences(string: str, char: str) -> List[int]:
@@ -48,12 +55,11 @@ def get_substring_length_map(number: str) -> Dict[int, List[str]]:
 
 def get_vocabulary() -> Set[str]:
     """ TODO. """
-    raise NotImplementedError
-
-
-def get_vocab_map() -> Dict[str, List[str]]:
-    """ TODO. """
-    raise NotImplementedError
+    if not os.path.isfile(VOCAB_SAVE_PATH):
+        urllib.request.urlretrieve(VOCAB_URL, VOCAB_SAVE_PATH)  # type: ignore
+    with open(VOCAB_SAVE_PATH, "r") as vocab_file:
+        vocabulary = vocab_file.readlines()
+    return set(vocabulary)
 
 
 def compute_vocab_map(
@@ -155,7 +161,6 @@ def insert_dashes(spaced_phoneword: str, spacer: str, numformat: str) -> str:
     phoneword : ``str``.
         With dashes added.
     """
-    # TODO: Split into a validation function for dashless phonewords.
     # 1. Insert `^` characters where dashes go according to the format.
     # 2. Insert a dash before every inserted word.
     # 3. Replace re.sub(r"([A-Z])^([A-Z])", "\1\2", <string>).

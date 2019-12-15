@@ -4,17 +4,22 @@ from typing import Set, Dict, List, Tuple, Optional
 
 from telephone.utils import (
     validate,
-    get_vocab_map,
+    get_vocabulary,
+    compute_vocab_map,
     get_country_code_and_base,
     get_substring_starting_index_map,
     insert_dashes,
 )
+from telephone.tests.test_constants import US_LETTER_MAP
 
 # pylint: disable=bad-continuation, too-many-locals, too-many-nested-blocks
 
 
 def all_wordifications(
-    number: str, numformat: str = "", vocab_map: Optional[Dict[str, List[str]]] = None
+    number: str,
+    numformat: str = "",
+    vocabulary: Optional[Set[str]] = None,
+    letter_map: Dict[str, str] = US_LETTER_MAP,
 ) -> Set[str]:
     """
     Generates all phonewords from ``number`` using words from ``vocabulary``.
@@ -38,9 +43,8 @@ def all_wordifications(
     if number == "":
         return set([])
 
-    vocabulary_map: Dict[
-        str, List[str]
-    ] = get_vocab_map() if vocab_map is None else vocab_map
+    vocab: Set[str] = get_vocabulary() if vocabulary is None else vocabulary
+    vocabulary_map: Dict[str, List[str]] = compute_vocab_map(vocab, letter_map)
 
     # Format inference.
     if numformat == "":

@@ -16,4 +16,4 @@ def test_compute_vocab_map(vocabulary: Set[str]) -> None:
     for wordhash, words in vocab_map.items():
         for word in words:
             implicit_format = "0" * len(word)
-            assert words_to_number(word, US_LETTER_MAP, implicit_format) == wordhash
+            assert words_to_number(word, implicit_format, US_LETTER_MAP) == wordhash
