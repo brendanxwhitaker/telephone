@@ -82,7 +82,7 @@ def test_number_to_words_is_left_inverse_of_words_to_number(
         A set of strings consisting of lowercase alpha characters only. All nonempty.
     """
     phoneword = number_to_words(number, US_FORMAT, vocab, US_LETTER_MAP)
-    resultant_number = words_to_number(phoneword, US_LETTER_MAP)
+    resultant_number = words_to_number(phoneword, US_FORMAT, US_LETTER_MAP)
     assert number == resultant_number
 
 
@@ -92,5 +92,5 @@ def test_number_to_words_manual(vocab: Set[str]) -> None:
     number = "0-000-000"
     numformat = "0-000-000"
     phoneword = number_to_words(number, numformat, vocab, US_LETTER_MAP)
-    resultant_number = words_to_number(phoneword, US_LETTER_MAP, numformat)
+    resultant_number = words_to_number(phoneword, numformat, US_LETTER_MAP)
     assert number == resultant_number

@@ -5,7 +5,7 @@ from hypothesis import given
 from telephone.utils import find_occurrences
 from telephone.words_to_number import words_to_number
 from telephone.tests.generators import generate_phoneword
-from telephone.tests.test_constants import US_LETTER_MAP, GENERAL_FORMAT
+from telephone.tests.test_constants import US_LETTER_MAP, GENERAL_FORMAT, US_FORMAT
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
@@ -64,5 +64,5 @@ def test_words_to_number_yields_correct_length(data, numformat: str) -> None:
 
 def test_words_to_number_manual() -> None:
     """ Manual test. """
-    number = words_to_number("1-877-KARS-4-KIDS", US_LETTER_MAP)
+    number = words_to_number("1-877-KARS-4-KIDS", US_FORMAT, US_LETTER_MAP)
     assert number == "1-877-527-7454"

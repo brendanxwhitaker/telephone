@@ -9,9 +9,9 @@
 8. Decide how to rename test constants. (DONE)
 9. Write out assumptions.
 10. Fix validation and country-base split functionality. (DONE)
-11. Make arguments optional and auto-download data to a ``data/`` folder.
+11. Make arguments optional and auto-download data to a ``data/`` folder. (DONE)
 12. Add ``data/`` to ``.gitignore``. (DONE)
-13. Complete all inline TODOs.
+13. Complete all inline TODOs. (DONE)
 14. Test for arbitrary letter maps.
 15. Add a ``generators.py``. (DONE)
 16. Polish documentation.
