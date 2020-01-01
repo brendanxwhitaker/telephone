@@ -7,7 +7,7 @@
 6. Move some functions out of ``all_wordifications.py`` and decide what to name this file. (DONE)
 7. Write some old-fashioned tests. (DONE)
 8. Decide how to rename test constants. (DONE)
-9. Write out assumptions.
+9. Write out assumptions. (DONE)
 10. Fix validation and country-base split functionality. (DONE)
 11. Make arguments optional and auto-download data to a ``data/`` folder. (DONE)
 12. Add ``data/`` to ``.gitignore``. (DONE)
