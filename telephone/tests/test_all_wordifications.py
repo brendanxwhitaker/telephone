@@ -141,10 +141,7 @@ def test_all_wordifications_manual() -> None:
     number = "0-000-000"
     numformat = "0-000-000"
 
-    with open("data/google-10000-english.txt", "r") as vocab_file:
-        vocab = set(vocab_file.readlines())
-        vocab = {token.strip() for token in vocab}
-    phonewords: Set[str] = all_wordifications(number, numformat, vocab, US_LETTER_MAP)
+    phonewords: Set[str] = all_wordifications(number, numformat, None, US_LETTER_MAP)
     assert phonewords
     for word in phonewords:
         translated_number = words_to_number(word, numformat, US_LETTER_MAP)

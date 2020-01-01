@@ -1,10 +1,12 @@
 """ Phoneword generators for testing. """
+# pylint: disable=
 import random
 import hypothesis.strategies as st
+from hypothesis.strategies._internal.core import DataObject
 from telephone.utils import insert_dashes, get_country_code_and_base
 
 
-def generate_phoneword(data, numformat: str) -> str:
+def generate_phoneword(data: DataObject, numformat: str) -> str:
     """
     Generates an arbitrary phoneword given a hypothesis data object.
 
@@ -27,7 +29,7 @@ def generate_phoneword(data, numformat: str) -> str:
     return phoneword
 
 
-def generate_spaced_phoneword(data, numformat: str, spacer: str) -> str:
+def generate_spaced_phoneword(data: DataObject, numformat: str, spacer: str) -> str:
     """
     Generates an arbitrary phoneword with spacers between consecutive alpha words
     to simulate input to ``insert_dashes()``.

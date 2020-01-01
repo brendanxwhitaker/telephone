@@ -1,15 +1,20 @@
 """ Tests for the ``words_to_number()`` function. """
 import hypothesis.strategies as st
 from hypothesis import given
+from hypothesis.strategies._internal.core import DataObject
 
 from telephone.utils import find_occurrences
 from telephone.words_to_number import words_to_number
 from telephone.tests.generators import generate_phoneword
 from telephone.tests.test_constants import US_LETTER_MAP, GENERAL_FORMAT, US_FORMAT
 
+# pylint: disable=bad-continuation
+
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_words_to_number_places_dashes_correctly(data, numformat: str) -> None:
+def test_words_to_number_places_dashes_correctly(
+    data: DataObject, numformat: str
+) -> None:
     """
     Tests that we generate numbers with the dashes in the right place.
 
@@ -28,7 +33,7 @@ def test_words_to_number_places_dashes_correctly(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_words_to_number_output_is_numeric(data, numformat: str) -> None:
+def test_words_to_number_output_is_numeric(data: DataObject, numformat: str) -> None:
     """
     Tests that the function doesn't return anything with letters in it.
 
@@ -46,7 +51,9 @@ def test_words_to_number_output_is_numeric(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_words_to_number_yields_correct_length(data, numformat: str) -> None:
+def test_words_to_number_yields_correct_length(
+    data: DataObject, numformat: str
+) -> None:
     """
     Tests that we generate numbers with the correct length.
 
