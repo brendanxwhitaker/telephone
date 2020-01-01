@@ -3,14 +3,17 @@ import re
 
 import hypothesis.strategies as st
 from hypothesis import given
+from hypothesis.strategies._internal.core import DataObject
 
 from telephone.utils import find_occurrences, insert_dashes
 from telephone.tests.generators import generate_spaced_phoneword
 from telephone.tests.test_constants import GENERAL_FORMAT
 
+# pylint: disable=bad-continuation
+
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_insert_dashes_doesnt_doubledash(data, numformat: str) -> None:
+def test_insert_dashes_doesnt_doubledash(data: DataObject, numformat: str) -> None:
     """ TODO. """
     dashless_format = numformat.replace("-", "")
     dashless_phoneword = data.draw(
@@ -21,7 +24,7 @@ def test_insert_dashes_doesnt_doubledash(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_insert_dashes_is_uppercase(data, numformat: str) -> None:
+def test_insert_dashes_is_uppercase(data: DataObject, numformat: str) -> None:
     """ TODO. """
     dashless_format = numformat.replace("-", "")
     dashless_phoneword = data.draw(
@@ -32,7 +35,7 @@ def test_insert_dashes_is_uppercase(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_insert_dashes_keeps_dashes_inside(data, numformat: str) -> None:
+def test_insert_dashes_keeps_dashes_inside(data: DataObject, numformat: str) -> None:
     """ Make sure it doesn't put dashes at the ends. """
     dashless_format = numformat.replace("-", "")
     dashless_phoneword = data.draw(
@@ -43,7 +46,9 @@ def test_insert_dashes_keeps_dashes_inside(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_insert_dashes_places_dashes_correctly(data, numformat: str) -> None:
+def test_insert_dashes_places_dashes_correctly(
+    data: DataObject, numformat: str
+) -> None:
     """ Make sure a classical phone number is treated correctly. """
     dashless_format = numformat.replace("-", "")
     dashless_number = data.draw(
@@ -57,7 +62,7 @@ def test_insert_dashes_places_dashes_correctly(data, numformat: str) -> None:
 
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
-def test_insert_dashes_handles_spacers(data, numformat: str) -> None:
+def test_insert_dashes_handles_spacers(data: DataObject, numformat: str) -> None:
     """ Make sure spacers are replaced with dashes. """
     spacer = "&"
     spaced_phoneword = generate_spaced_phoneword(

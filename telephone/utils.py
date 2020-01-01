@@ -54,8 +54,11 @@ def get_substring_length_map(number: str) -> Dict[int, List[str]]:
 
 
 def get_vocabulary() -> Set[str]:
-    """ TODO. """
+    """ Read and possible download a generic English vocabulary. """
     if not os.path.isfile(VOCAB_SAVE_PATH):
+        vocab_save_dir = os.path.dirname(VOCAB_SAVE_PATH)
+        if not os.path.isdir(vocab_save_dir):
+            os.makedirs(vocab_save_dir)
         urllib.request.urlretrieve(VOCAB_URL, VOCAB_SAVE_PATH)
     with open(VOCAB_SAVE_PATH, "r") as vocab_file:
         vocabulary = vocab_file.readlines()
