@@ -14,7 +14,7 @@ from telephone.tests.test_constants import GENERAL_FORMAT
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
 def test_insert_dashes_doesnt_doubledash(data: DataObject, numformat: str) -> None:
-    """ TODO. """
+    """ Check that we never insert two adjacent dashes. """
     dashless_format = numformat.replace("-", "")
     dashless_phoneword = data.draw(
         st.from_regex(r"[A-Z0-9]{%d}" % len(dashless_format), fullmatch=True)
@@ -25,7 +25,7 @@ def test_insert_dashes_doesnt_doubledash(data: DataObject, numformat: str) -> No
 
 @given(st.data(), st.from_regex(GENERAL_FORMAT, fullmatch=True))
 def test_insert_dashes_is_uppercase(data: DataObject, numformat: str) -> None:
-    """ TODO. """
+    """ Check that the words inserted are uppercase. """
     dashless_format = numformat.replace("-", "")
     dashless_phoneword = data.draw(
         st.from_regex(r"[A-Z0-9]{%d}" % len(dashless_format), fullmatch=True)
